@@ -3,7 +3,8 @@
  * Implemented by @awmanoj 2024 
  * Inspired and ported from original code in Javascript by @bachors 2018 | https://github.com/bachors/nik_parse.js
  *******************************************************/
-package nikparse
+// Package nikparser provides functions to parse Indonesian National Identification Number (NIK).
+ package nikparse
 
 import (
 	"fmt"
@@ -16,6 +17,7 @@ const kProvinceCodeKey = "provinsi"
 const kDistrictCodeKey = "kabkot"
 const kSubDistrictCodeKey = "kecamatan"
 
+// NIKInfo contains the parsed information from a NIK.
 type NIKInfo struct {
 	Province     string // provinsi
 	District     string // kabkot
@@ -27,6 +29,19 @@ type NIKInfo struct {
 	Gender       string
 }
 
+// ParseNIK parses an Indonesian National Identification Number (NIK) and returns the parsed information.
+//
+// The NIK should be a 16-digit string. The function extracts the province, district, sub-district,
+// date of birth, gender, and unique code from the NIK.
+//
+// Example NIK: "3201010201980001"
+//
+// The date of birth is assumed to be in the format DDMMYY. If the date part is invalid, an error is returned.
+//
+// Gender is determined by the date of birth; if the day is greater than 40, the gender is female ("PEREMPUAN"),
+// otherwise male ("LAKI-LAKI").
+//
+// Returns an NIKInfo struct containing the parsed information, or an error if the NIK is invalid.
 func ParseNIK(nik string) (*NIKInfo, error) {
 	// validate length
 	if len(nik) != 16 {
