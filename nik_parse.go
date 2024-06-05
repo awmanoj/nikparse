@@ -17,16 +17,22 @@ const kProvinceCodeKey = "provinsi"
 const kDistrictCodeKey = "kabkot"
 const kSubDistrictCodeKey = "kecamatan"
 
+// This global variable is a UGLY hack for skipping province data in the validity of NIK 
+// for the cases where interest is only in gathering DOB and Gender 
+var DoNotValidateGeoData = false 
+
 // NIKInfo contains the parsed information from a NIK.
 type NIKInfo struct {
-	Province     string // provinsi
-	District     string // kabkot
-	SubDistrict  string // kecamatan
-	DateOfBirth  string
-	MonthOfBirth string
-	YearOfBirth  string
-	KodePOS      string
-	Gender       string
+	Valid	 	 				bool 
+	SkippedGeoDataValidation 	bool 
+	Province     				string // provinsi
+	District     				string // kabkot
+	SubDistrict  				string // kecamatan
+	DateOfBirth  				string
+	MonthOfBirth 				string
+	YearOfBirth  				string
+	KodePOS      				string
+	Gender       				string
 }
 
 // ParseNIK parses an Indonesian National Identification Number (NIK) and returns the parsed information.
@@ -58,20 +64,23 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 	subDistrictCode := nik[0:6]
 
 	// Validate geo data presence
-	if !HasGeoData(provinceCode, districtCode, subDistrictCode) {
+	if !DoNotValidateGeoData && !HasGeoData(provinceCode, districtCode, subDistrictCode) {
 		return nil, fmt.Errorf("err province or district or subdistrict not found: %s | %s | %s",
 			provinceCode, districtCode, subDistrictCode)
 	}
 
-	// extract names
-	provinceName := GetProvince(provinceCode)
-	districtName := GetDistrict(districtCode)
-	subDistrictPOSName := GetSubDistrict(subDistrictCode)
+	var provinceName, districtName, subDistrictPOSName, subDistrictName, kodePOS string 
+	if !DoNotValidateGeoData {
+		// extract names
+		provinceName = GetProvince(provinceCode)
+		districtName = GetDistrict(districtCode)
+		subDistrictPOSName = GetSubDistrict(subDistrictCode)
 
-	// separate and extract subdistrict data and POS
-	splits := strings.Split(strings.ToUpper(subDistrictPOSName), " -- ")
-	subDistrictName := splits[0]
-	kodePOS := splits[1]
+		// separate and extract subdistrict data and POS
+		splits := strings.Split(strings.ToUpper(subDistrictPOSName), " -- ")
+		subDistrictName = splits[0]
+		kodePOS = splits[1]
+	}
 
 	// current Year
 	currentYear := time.Now().Year()
@@ -116,14 +125,16 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 	}
 
 	return &NIKInfo{
-		Province:     provinceName,
-		District:     districtName,
-		SubDistrict:  subDistrictName,
-		DateOfBirth:  fmt.Sprintf("%s", dateOfBirth),
-		MonthOfBirth: monthOfBirth,
-		YearOfBirth:  yearOfBirth,
-		KodePOS:      kodePOS,
-		Gender:       gender,
+		Valid: 		  				true, 
+		SkippedGeoDataValidation: 	DoNotValidateGeoData, 
+		Province:     				provinceName,
+		District:     				districtName,
+		SubDistrict:  				subDistrictName,
+		DateOfBirth:  				fmt.Sprintf("%s", dateOfBirth),
+		MonthOfBirth: 				monthOfBirth,
+		YearOfBirth:  				yearOfBirth,
+		KodePOS:      				kodePOS,
+		Gender:       				gender,
 	}, nil
 }
 
