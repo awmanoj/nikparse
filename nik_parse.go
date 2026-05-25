@@ -54,6 +54,13 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 		return nil, fmt.Errorf("err invalid NIK length")
 	}
 
+	// validate all digits (geo-check may be skipped, so this can't rely on it)
+	for i := 0; i < len(nik); i++ {
+		if nik[i] < '0' || nik[i] > '9' {
+			return nil, fmt.Errorf("err NIK must be all digits")
+		}
+	}
+
 	// province code
 	provinceCode := nik[0:2]
 
@@ -79,7 +86,9 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 		// separate and extract subdistrict data and POS
 		splits := strings.Split(strings.ToUpper(subDistrictPOSName), " -- ")
 		subDistrictName = splits[0]
-		kodePOS = splits[1]
+		if len(splits) > 1 {
+			kodePOS = splits[1]
+		}
 	}
 
 	// current Year
@@ -112,9 +121,10 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 		dateOfBirth = fmt.Sprintf("%02d", dateOfBirthInt-40)
 	}
 
-	// tahun lahir
+	// tahun lahir: two-digit year is ambiguous, so pick the most recent
+	// non-future century. <= keeps the current year in the 20xx range.
 	yearPrefix := "19"
-	if yearOfBirthInt < currentYearLastTwoDigits {
+	if yearOfBirthInt <= currentYearLastTwoDigits {
 		yearPrefix = "20"
 	}
 	yearOfBirth := fmt.Sprintf("%s%02d", yearPrefix, yearOfBirthInt)
@@ -130,7 +140,7 @@ func ParseNIK(nik string) (*NIKInfo, error) {
 		Province:     				provinceName,
 		District:     				districtName,
 		SubDistrict:  				subDistrictName,
-		DateOfBirth:  				fmt.Sprintf("%s", dateOfBirth),
+		DateOfBirth:  				dateOfBirth,
 		MonthOfBirth: 				monthOfBirth,
 		YearOfBirth:  				yearOfBirth,
 		KodePOS:      				kodePOS,

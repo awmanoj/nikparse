@@ -8,6 +8,10 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintf(os.Stderr, "usage: %s <nik>\n", os.Args[0])
+		os.Exit(1)
+	}
 	nik := os.Args[1]
 
 	// skip geo data validation

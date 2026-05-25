@@ -15,6 +15,7 @@ func TestParseNIK(t *testing.T) {
 			name: "Valid NIK",
 			nik:  "3201010201980001",
 			expected: &NIKInfo{
+				Valid:        true,
 				Province:     "JAWA BARAT",
 				District:     "KAB. BOGOR",
 				SubDistrict:  "CIBINONG",
@@ -48,6 +49,7 @@ func TestParseNIK(t *testing.T) {
 			name: "Edge case: leap year",
 			nik:  "3201012902960001", // 29 Feb 1996
 			expected: &NIKInfo{
+				Valid:        true,
 				Province:     "JAWA BARAT",
 				District:     "KAB. BOGOR",
 				SubDistrict:  "CIBINONG",
